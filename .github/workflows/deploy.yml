@@ -1,0 +1,123 @@
+name: CI/CD Pipeline - PDF Translator
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      auto_publish:
+        description: 'Auto-publish to stores after upload (true/false)'
+        required: true
+        default: 'false'
+        type: boolean
+
+jobs:
+  test_and_build:
+    name: Test & Package Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pypdf
+
+      - name: Run Integrity Test Suite
+        run: |
+          python tests/test_extension.py
+
+      - name: Build Production Extension Package
+        run: |
+          python package.py
+
+      - name: Verify Package Archive
+        run: |
+          test -f pdf-translator-extension.zip
+          echo "Package created successfully: $(ls -lh pdf-translator-extension.zip | awk '{print $5}')"
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-translator-extension
+          path: pdf-translator-extension.zip
+          retention-days: 30
+
+  deploy_chrome:
+    name: Deploy to Google Chrome Web Store
+    needs: test_and_build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+
+    env:
+      HAS_CHROME_SECRETS: ${{ secrets.CHROME_CLIENT_ID != '' && secrets.CHROME_EXTENSION_ID != '' }}
+
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pdf-translator-extension
+
+      - name: Check Chrome Web Store Credentials
+        run: |
+          if [ "${{ env.HAS_CHROME_SECRETS }}" != "true" ]; then
+            echo "ℹ️ Chrome Web Store secrets not configured yet."
+            echo "To enable automatic deployment, add CHROME_EXTENSION_ID, CHROME_CLIENT_ID, CHROME_CLIENT_SECRET, and CHROME_REFRESH_TOKEN to GitHub Secrets."
+          else
+            echo "✅ Chrome Web Store secrets detected."
+          fi
+
+      - name: Upload to Chrome Web Store
+        if: env.HAS_CHROME_SECRETS == 'true'
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          file-path: pdf-translator-extension.zip
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          publish: ${{ github.event.inputs.auto_publish == 'true' || startsWith(github.ref, 'refs/tags/v') }}
+
+  deploy_firefox:
+    name: Deploy to Mozilla Firefox Add-ons (AMO)
+    needs: test_and_build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+
+    env:
+      HAS_AMO_SECRETS: ${{ secrets.AMO_JWT_ISSUER != '' && secrets.AMO_JWT_SECRET != '' }}
+
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pdf-translator-extension
+
+      - name: Check Firefox AMO Credentials
+        run: |
+          if [ "${{ env.HAS_AMO_SECRETS }}" != "true" ]; then
+            echo "ℹ️ Firefox AMO secrets not configured yet."
+            echo "To enable automatic deployment, add AMO_JWT_ISSUER and AMO_JWT_SECRET to GitHub Secrets."
+          else
+            echo "✅ Firefox AMO secrets detected."
+          fi
+
+      - name: Upload & Submit to Firefox AMO
+        if: env.HAS_AMO_SECRETS == 'true'
+        uses: wdzeng/firefox-addon-action@v1
+        with:
+          addon-guid: "pdf-translator-extension@keshav.dev"
+          xpi-path: pdf-translator-extension.zip
+          jwt-issuer: ${{ secrets.AMO_JWT_ISSUER }}
+          jwt-secret: ${{ secrets.AMO_JWT_SECRET }}
