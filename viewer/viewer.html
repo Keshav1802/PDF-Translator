@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Translator - Viewer</title>
+  <link rel="stylesheet" href="viewer.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="theme-dark">
+
+  <!-- Top Navigation & Controls Toolbar -->
+  <header id="main-toolbar" class="toolbar">
+    <div class="toolbar-section left">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </div>
+        <span class="brand-name">PDF Translator</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- File Name Badge -->
+      <span id="doc-title" class="doc-title" title="No document loaded">No document loaded</span>
+    </div>
+
+    <!-- Center Section: View Mode & Page Navigation -->
+    <div class="toolbar-section center">
+      <!-- View Modes -->
+      <div class="view-mode-selector" role="group" aria-label="View Mode">
+        <button id="mode-overlay" class="mode-btn active" title="Translated text seamlessly overlaid onto original document">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+          Overlay
+        </button>
+        <button id="mode-split" class="mode-btn" title="Side-by-side synchronized view: Original on left, Translated on right">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+          Side-by-Side
+        </button>
+        <button id="mode-original" class="mode-btn" title="Show original PDF document">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          Original
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Page Controls -->
+      <div class="page-controls">
+        <button id="btn-prev-page" class="icon-btn" title="Previous Page" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div class="page-num-wrapper">
+          <input type="number" id="input-page-num" min="1" value="1" title="Jump to page">
+          <span class="page-count-separator">/</span>
+          <span id="label-page-count">1</span>
+        </div>
+        <button id="btn-next-page" class="icon-btn" title="Next Page" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Zoom Controls -->
+      <div class="zoom-controls">
+        <button id="btn-zoom-out" class="icon-btn" title="Zoom Out">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <select id="select-zoom" class="zoom-dropdown" title="Zoom Level">
+          <option value="0.5">50%</option>
+          <option value="0.75">75%</option>
+          <option value="1.0" selected>100%</option>
+          <option value="1.25">125%</option>
+          <option value="1.5">150%</option>
+          <option value="1.75">175%</option>
+          <option value="2.0">200%</option>
+          <option value="2.5">250%</option>
+          <option value="3.0">300%</option>
+          <option value="page-fit">Fit Page</option>
+          <option value="page-width">Fit Width</option>
+        </select>
+        <button id="btn-zoom-in" class="icon-btn" title="Zoom In">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Section: Language, Status & Options -->
+    <div class="toolbar-section right">
+      <!-- Target Language -->
+      <div class="lang-selector-wrapper" title="Target Translation Language">
+        <span class="lang-label">To:</span>
+        <select id="select-target-lang" class="lang-select">
+          <option value="en" selected>English (EN)</option>
+          <option value="es">Spanish (ES)</option>
+          <option value="fr">French (FR)</option>
+          <option value="de">German (DE)</option>
+          <option value="zh-CN">Chinese (ZH)</option>
+          <option value="ja">Japanese (JA)</option>
+          <option value="ko">Korean (KO)</option>
+          <option value="pt">Portuguese (PT)</option>
+          <option value="it">Italian (IT)</option>
+          <option value="ru">Russian (RU)</option>
+          <option value="ar">Arabic (AR)</option>
+          <option value="hi">Hindi (HI)</option>
+        </select>
+      </div>
+
+      <!-- AI Vision Scan Translate Button -->
+      <button id="btn-ai-vision" class="action-btn vision-btn hidden" title="Translate Scanned Page with AI Vision">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        <span id="btn-ai-vision-label">Translate Scan</span>
+      </button>
+
+      <!-- Retranslate / Refresh Button -->
+      <button id="btn-retranslate" class="action-btn" title="Re-translate current document">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        <span>Translate</span>
+      </button>
+
+      <!-- Open Local File Button -->
+      <label class="icon-btn file-upload-btn" title="Open another PDF file">
+        <input type="file" id="input-file-picker" accept="application/pdf" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </label>
+
+      <!-- Settings Modal Toggle -->
+      <button id="btn-settings" class="icon-btn" title="Settings (API Key & Engine)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Scanned Document Notice Bar -->
+  <div id="scanned-doc-notice" class="scanned-notice-bar hidden">
+    <div class="scanned-notice-content">
+      <span class="scanned-badge">📷 Scanned PDF</span>
+      <span class="scanned-text">This document contains image scans without digital text.</span>
+      <button id="btn-banner-translate-scan" class="btn-notice-action">⚡ Translate Page with AI Vision</button>
+    </div>
+  </div>
+
+  <!-- Status / Progress Banner -->
+  <div id="status-banner" class="status-banner hidden">
+    <div class="status-indicator-spinner"></div>
+    <span id="status-text">Translating page 1...</span>
+    <div class="progress-bar-container">
+      <div id="status-progress-bar" class="progress-bar-fill"></div>
+    </div>
+  </div>
+
+  <!-- Main Viewport Area -->
+  <main id="viewer-container" class="viewer-container mode-overlay">
+    <!-- Overlay / Single Mode Container -->
+    <div id="single-viewport" class="viewport-pane">
+      <div id="pages-container" class="pages-wrapper"></div>
+    </div>
+
+    <!-- Side-by-Side Dual Pane Container (Hidden in overlay mode) -->
+    <div id="split-viewport" class="viewport-pane hidden">
+      <div class="split-column left-column">
+        <div class="pane-header">Original Document</div>
+        <div id="split-left-pages" class="pages-wrapper"></div>
+      </div>
+      <div class="split-column right-column">
+        <div class="pane-header">Translated Document (<span id="split-lang-label">English</span>)</div>
+        <div id="split-right-pages" class="pages-wrapper"></div>
+      </div>
+    </div>
+
+    <!-- Welcome / Dropzone State (When no PDF is loaded yet) -->
+    <div id="dropzone" class="dropzone-container">
+      <div class="dropzone-card">
+        <div class="dropzone-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+        </div>
+        <h2>Open or Drop a PDF Here</h2>
+        <p>Translate foreign language PDFs with 100% exact layout, images, and graphics preserved.</p>
+        <div class="dropzone-actions">
+          <button id="btn-browse-pdf" class="btn-primary">Browse PDF File</button>
+          <button id="btn-load-demo" class="btn-secondary">Load Sample French PDF</button>
+        </div>
+        <span class="dropzone-hint">Zero file downloads needed &bull; Runs completely in your browser</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Original Text Hover Card (Floating Lens) -->
+  <div id="hover-lens" class="hover-lens hidden">
+    <div class="hover-lens-header">
+      <span class="badge">Original</span>
+      <span id="hover-source-lang" class="detected-lang-pill">Detected</span>
+    </div>
+    <div id="hover-lens-text" class="hover-lens-body"></div>
+  </div>
+
+  <!-- Settings Modal Dialog -->
+  <div id="modal-settings" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Translation Engine Settings</h3>
+        <button id="btn-close-modal" class="icon-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="setting-provider">Engine Provider</label>
+          <select id="setting-provider" class="form-control">
+            <option value="free_google">Free Google Translate (No API key required)</option>
+            <option value="gemini">Google Gemini AI (Free API Key, best nuance)</option>
+          </select>
+          <small class="form-help">The free engine works instantly out of the box without any setup.</small>
+        </div>
+
+        <div id="gemini-config-group" class="form-group hidden">
+          <label for="setting-gemini-key">Gemini API Key</label>
+          <input type="password" id="setting-gemini-key" class="form-control" placeholder="AIzaSy...">
+          <small class="form-help">Get a free key at <a href="https://aistudio.google.com" target="_blank" rel="noopener">Google AI Studio</a> (Free tier: 15 req/min).</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-settings" class="btn-primary">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Gemini Setup Modal for Scanned PDFs -->
+  <div id="modal-gemini-setup" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Enable AI Vision Translation</h3>
+        <button id="btn-close-setup-modal" class="icon-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 12px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+          This document consists of scanned images without selectable text. Gemini AI Vision reads and translates scanned pages with complete accuracy.
+        </p>
+        <div class="setup-steps-box">
+          <div class="setup-step">
+            <span class="step-num">1</span>
+            <span>Get your personal free key at <a href="https://aistudio.google.com" target="_blank" rel="noopener">Google AI Studio</a> (Free tier: 1,500 pages/day).</span>
+          </div>
+          <div class="setup-step">
+            <span class="step-num">2</span>
+            <span>Paste your key below:</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 14px;">
+          <label for="input-setup-gemini-key">Gemini API Key</label>
+          <input type="password" id="input-setup-gemini-key" class="form-control" placeholder="AIzaSy...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-confirm-setup-key" class="btn-primary">Save &amp; Translate Page</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quota Exhausted Alternative Options Modal (ONLY shown when 1,500 daily limit is reached) -->
+  <div id="modal-quota-exhausted" class="modal-backdrop hidden">
+    <div class="modal-card quota-modal-card">
+      <div class="modal-header">
+        <div class="quota-header-info">
+          <span class="quota-warning-badge">⚠️ Quota Limit Reached</span>
+          <h3>Gemini Free Daily Limit Reached (1,500/day)</h3>
+          <p class="subtitle">Your Google account has reached its 1,500 free requests for today. Choose an alternative below to keep translating:</p>
+        </div>
+        <button id="btn-close-quota-modal" class="icon-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="fallback-options-grid">
+          <!-- Option 1: Free OCR Fallback -->
+          <div class="fallback-card highlight">
+            <div class="card-tag">Alternative 1 &bull; Unlimited &amp; Free</div>
+            <h4>Switch to Free OCR Engine</h4>
+            <p>Extracts text from images using free OCR and translates with Google Translate. Runs completely free with zero quota limits.</p>
+            <button id="btn-activate-ocr-fallback" class="btn-primary">Switch to Free OCR &amp; Translate</button>
+          </div>
+
+          <!-- Option 2: Backup Gemini Key -->
+          <div class="fallback-card">
+            <div class="card-tag">Alternative 2 &bull; Instant AI Vision</div>
+            <h4>Use a Backup Gemini API Key</h4>
+            <p>Have another Google account? Paste a secondary free API key to instantly resume high-quality AI Vision.</p>
+            <div class="backup-key-row">
+              <input type="password" id="input-backup-gemini-key" class="form-control" placeholder="Paste backup AIzaSy... key">
+              <button id="btn-save-backup-key" class="btn-secondary">Apply Key</button>
+            </div>
+          </div>
+
+          <!-- Option 3: Full Document OCR -->
+          <div class="fallback-card">
+            <div class="card-tag">Alternative 3 &bull; For 100+ Page Books</div>
+            <h4>Pre-Convert Document with PDF24 OCR</h4>
+            <p>Run your PDF once through <a href="https://tools.pdf24.org/en/ocr-pdf" target="_blank" rel="noopener">PDF24 Free OCR</a> or Adobe OCR. It embeds digital text so all pages translate instantly with zero AI quota consumption.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PDF.js Scripts -->
+  <script src="../lib/pdf.min.js"></script>
+  <!-- Translation Service -->
+  <script src="../services/translator.js"></script>
+  <!-- Main Viewer Logic -->
+  <script src="viewer.js"></script>
+</body>
+</html>

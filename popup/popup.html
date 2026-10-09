@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Translator</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="popup-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>PDF Translator</h1>
+          <span class="version">v1.0.0 &bull; Layout Preserving</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="popup-body">
+      <!-- Active Tab PDF Detector Banner -->
+      <div id="tab-status-card" class="status-card">
+        <div class="status-icon" id="status-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="status-details">
+          <span class="status-title" id="status-title">Checking tab...</span>
+          <span class="status-sub" id="status-sub">Detecting PDF document</span>
+        </div>
+      </div>
+
+      <!-- Primary Action: Translate Current Tab -->
+      <button id="btn-translate-active-tab" class="btn-primary" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+        <span>Translate Current PDF</span>
+      </button>
+
+      <!-- Secondary Action: Open Full Viewer / Upload -->
+      <button id="btn-open-viewer" class="btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        <span>Open PDF Translator Viewer</span>
+      </button>
+
+      <!-- Target Language Setting -->
+      <div class="form-row">
+        <label for="popup-target-lang">Translate into:</label>
+        <select id="popup-target-lang" class="select-input">
+          <option value="en" selected>English (EN)</option>
+          <option value="es">Spanish (ES)</option>
+          <option value="fr">French (FR)</option>
+          <option value="de">German (DE)</option>
+          <option value="zh-CN">Chinese (ZH)</option>
+          <option value="ja">Japanese (JA)</option>
+          <option value="ko">Korean (KO)</option>
+          <option value="pt">Portuguese (PT)</option>
+          <option value="it">Italian (IT)</option>
+          <option value="ru">Russian (RU)</option>
+          <option value="ar">Arabic (AR)</option>
+          <option value="hi">Hindi (HI)</option>
+        </select>
+      </div>
+
+      <!-- Quick Feature Highlights -->
+      <div class="feature-badges">
+        <div class="badge-item">
+          <span class="badge-dot green"></span>
+          <span>Zero Downloads</span>
+        </div>
+        <div class="badge-item">
+          <span class="badge-dot blue"></span>
+          <span>Graphics & Fonts Kept</span>
+        </div>
+        <div class="badge-item">
+          <span class="badge-dot purple"></span>
+          <span>Side-by-Side View</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
